@@ -1,0 +1,57 @@
+---
+title: "Random Effects and Hierarchical Linear Models"
+---
+
+
+
+```{r}
+sow.data <- read.csv("CreditCard_SOW_data.csv")
+```
+```{r}
+sow.data$logIncome = log(sow.data$Income)
+
+sow.data$logSowRatio = log(sow.data$ WalletShare/(1-sow.data$WalletShare))
+```
+```{r}
+lm1 <- lm(sow.data$logSowRatio~sow.data$History+sow.data$Balance+sow.data$Promotion+sow.data$History:sow.data$Promotion+sow.data$logIncome:sow.data$Promotion, data=sow.data)
+```
+```{r}
+library(lme4)
+```
+```{r}
+re_1<- lmer(logSowRatio~History+Balance+Promotion+History:Promotion+logIncome:Promotion+(1+Promotion|ConsumerID), data = sow.data)
+```
+```{r}
+summary(re_1)
+```
+First, because all the t-values are either greater than 2 or less than -2, we can conclude that all the fixed effects in this regression are statistically significant. 
+
+An intercept value of 0.09596 indicates the baseline across customers for the log of share-of-wallet is 0.09596. 
+
+A fixed effect of 0.01039 for History indicates an increase in number of months a customer is using the card before the experiment has a positive relationship with the baseline log of share-of-wallet. Specifically, an increase in History, increases the baseline level for log of share-of-wallet (intercept) by 0.01039, thereby increasing the log of share-of-wallet itself by 0.01039. 
+
+A fixed effect of -0.0005003 for Balance indicates the magnitude of a customer’s unpaid balance at beginning of month has a negative relationship with their log of share-of-wallet. Specifically, all customers experience a -0.0005003 change in log of share-of-wallet for each unit of increase in unpaid balance. 
+
+A fixed effect of 0.6129 for Promotion indicates the index of monthly promotional activity has a positive relationship with log of share-of-wallet. Specifically, the baseline impact of Promotion across all customers on log of share-of-wallet is 0.6129, meaning an increase in promotion index will increase log of share-of-wallet by 0.6129. 
+
+A fixed effect of -0.002571 for History:Promotion interaction indicates an increase in number of months a customer is using the card decreases the impact a promotion has on increasing the customer’s log of share-of-wallet. Specifically, for every additional month a customer uses the card, the effect of Promotion on log of share-of-wallet decreases by 0.002571 across all individuals. 
+
+A fixed effect of -0.03110 for logIncome:Promotion interaction indicates an increase in the log value of a customer’s income decreases the effect of promotions on a customer’s log of share-of- wallet. Specifically, for every additional log unit of income, the effect of Promotion on the customer’s log of share-of-wallet decreases by a baseline amount of 0.03110 across all individuals. 
+
+Next, we will compare model fits using AIC/BIC.
+
+```{r}
+AIC(lm1)
+```
+```{r}
+AIC(re_1)
+```
+```{r}
+BIC(lm1)
+```
+```{r}
+BIC(re_1)
+```
+We see that both the AIC and the BIC of the random effects model is lower than that of the linear model. This indicates that the random effects model (AIC of -6532.094 and BIC of -6470.207) is a better explanatory model for this dataset than the linear model. 
+
+
